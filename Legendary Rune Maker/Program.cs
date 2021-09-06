@@ -14,9 +14,10 @@ namespace Legendary_Rune_Maker
         {
             if (args.Length == 1 && args[0] == "--report")
             {
-                string code = await UploadErrorLog();
-                MessageBox.Show("Report code is " + code, "Reported successfully", MessageBoxButton.OK, MessageBoxImage.Information);
+                //string code = await UploadErrorLog();
+                //MessageBox.Show("Report code is " + code, "Reported successfully", MessageBoxButton.OK, MessageBoxImage.Information);
                 // MessageBox.Show("Failed to report error", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Bug Reporting is disabled", "Bug Report", MessageBoxButton.OK, MessageBoxImage.Exclamation);
             }
             else
             {

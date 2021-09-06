@@ -1,5 +1,6 @@
 ﻿//Mad props to @paolostyle for https://github.com/OrangeNote/RuneBook/pull/67
 
+using Anotar.Log4Net;
 using Legendary_Rune_Maker.Utils;
 using Newtonsoft.Json.Linq;
 using System;
@@ -18,6 +19,8 @@ namespace Legendary_Rune_Maker.Data.Providers
         public override Options ProviderOptions => Options.RunePages | Options.ItemSets | Options.SkillOrder | Options.Counters;
 
         private const int OverviewWorld = 12;
+        //Need to find the right number
+        private const int OverviewKorea = 2;
         private const int OverviewPlatPlus = 10;
 
         private const string UGGApiVersion = "1.1";
@@ -38,15 +41,20 @@ namespace Legendary_Rune_Maker.Data.Providers
         {
             if (_LolUGGVersion == null)
             {
-                var page = await WebCache.String("https://u.gg", soft: true);
-                var scriptUrl = Regex.Match(page, @"src=""(.*/main\..*?\.js)").Groups[1].Value;
+                //var page = await WebCache.String("https://u.gg", soft: true);
+                //var scriptUrl = Regex.Match(page, @"src=""(.*/main\..*?\.js)").Groups[1].Value;
 
-                var scriptText = await WebCache.String(scriptUrl, soft: true);
-                var versionsJson = Regex.Match(scriptText, @"(?<=\=)\[\{value:""\d+_\d+.*?]").Value;
-                var versions = 
-                    JArray.Parse(versionsJson);
+                //var scriptText = await WebCache.String(scriptUrl, soft: true);
+                //var versionsJson = Regex.Match(scriptText, @"(?<=\=)\[\{value:""\d+_\d+.*?]").Value;
+                //var versions = 
+                //    JArray.Parse(versionsJson);
 
-                _LolUGGVersion = versions[0]["value"].ToObject<string>();
+                //_LolUGGVersion = versions[0]["value"].ToObject<string>();
+
+                var json = await WebCache.String("https://static.u.gg/assets/lol/riot_patch_update/prod/ugg/patches.json");
+                var patches = JArray.Parse(json);
+
+                _LolUGGVersion = patches.First().ToObject<string>();
             }
 
             return _LolUGGVersion;
@@ -58,9 +66,15 @@ namespace Legendary_Rune_Maker.Data.Providers
             if (!ChampionData.TryGetValue(championId, out var data))
             {
                 string url = $"https://stats2.u.gg/lol/{UGGApiVersion}/overview/{await GetLolUGGVersion()}/ranked_solo_5x5/{championId}/{UGGOverviewVersion}.json";
+                LogTo.Info("Champion Data URL: " + url);
+
 
                 var json = JObject.Parse(await WebCache.String(url, soft: true));
-                ChampionData[championId] = data = (JObject)json[OverviewWorld.ToString()][OverviewPlatPlus.ToString()];
+                ChampionData[championId] = data = (JObject)json[OverviewKorea.ToString()][OverviewPlatPlus.ToString()];
+            }
+            else
+            {
+                LogTo.Info("ChampionData does not exist");
             }
 
             return data;
